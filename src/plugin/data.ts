@@ -1,6 +1,6 @@
 export const config = {
   settable: '__',
-  apiRoot: 'https://api.github.com',
+  apiRoot: 'https://bonus.ly/api/v1',
 };
 
 export const users = [
