@@ -3,13 +3,13 @@ import { config } from './data';
 
 function layerConsumesNestedData(layer) {
   const parts = layer.name.split(' ');
-  return parts.some(part => part.includes(config.settable) && part.includes('.'));
+  return parts.some((part) => part.includes(config.settable) && part.includes('.'));
 }
 
 export function getImageBytesFromUrl(url) {
-  figma.ui.postMessage({ type: 'getImageBytes', url });
-  return new Promise(res => {
-    figma.ui.once('message', value => {
+  figma.ui.postMessage({ type: 'getImageBytes', url: 'https://cors-anywhere.herokuapp.com/' + url });
+  return new Promise((res) => {
+    figma.ui.once('message', (value) => {
       let data = value as Uint8Array;
       let imageHash = figma.createImage(new Uint8Array(data)).hash;
 
@@ -25,7 +25,10 @@ export function getImageBytesFromUrl(url) {
           tint: 0,
         },
         imageHash,
-        imageTransform: [[1, 0, 0], [0, 1, 0]],
+        imageTransform: [
+          [1, 0, 0],
+          [0, 1, 0],
+        ],
         opacity: 1,
         scaleMode: 'FILL',
         scalingFactor: 0.5,
@@ -107,13 +110,13 @@ export async function setBackgroundFillFromImageUrl(layer, url) {
 }
 
 export function getColorData() {
-  figma.showUI(__html__, { visible: false })
-  figma.ui.postMessage({ type: 'getColorData' })
-  return new Promise(res => {
-    figma.ui.onmessage = resource => {
-      return res(resource)
-    }
-  })
+  figma.showUI(__html__, { visible: false });
+  figma.ui.postMessage({ type: 'getColorData' });
+  return new Promise((res) => {
+    figma.ui.onmessage = (resource) => {
+      return res(resource);
+    };
+  });
 }
 
 async function getHexFromLanguage(language) {
@@ -123,7 +126,7 @@ async function getHexFromLanguage(language) {
 }
 
 async function applyLayerTransformationFromField(layer, field, value?, data?) {
-  if (field.includes('avatar_url')) {
+  if (field.includes('profile_pic_url')) {
     if (!isShapeNode(layer)) return;
     await setBackgroundFillFromImageUrl(layer, value);
   }
