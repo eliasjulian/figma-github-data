@@ -7,9 +7,11 @@ function layerConsumesNestedData(layer) {
 }
 
 export function getImageBytesFromUrl(url) {
+  console.log(url);
   figma.ui.postMessage({ type: 'getImageBytes', url: 'https://cors-anywhere.herokuapp.com/' + url });
   return new Promise((res) => {
     figma.ui.once('message', (value) => {
+      console.log(value);
       let data = value as Uint8Array;
       let imageHash = figma.createImage(new Uint8Array(data)).hash;
 
@@ -59,38 +61,38 @@ function getValueFromNestedLayerName(layer, data) {
   return { field: parts[parts.length - 1], value: result };
 }
 
-export function getRGBFromHex(hex) {
-  let defaultColor = { r: 0, g: 0, b: 0 };
-  // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
-  let shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-  hex = hex.replace(shorthandRegex, (_, r, g, b) => {
-    return r + r + g + g + b + b;
-  });
+// export function getRGBFromHex(hex) {
+//   let defaultColor = { r: 0, g: 0, b: 0 };
+//   // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+//   let shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+//   hex = hex.replace(shorthandRegex, (_, r, g, b) => {
+//     return r + r + g + g + b + b;
+//   });
 
-  let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result
-    ? {
-        r: parseInt(result[1], 16) / 255, // divide by 255 to get as percent
-        g: parseInt(result[2], 16) / 255,
-        b: parseInt(result[3], 16) / 255,
-      }
-    : defaultColor;
-}
+//   let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+//   return result
+//     ? {
+//         r: parseInt(result[1], 16) / 255, // divide by 255 to get as percent
+//         g: parseInt(result[2], 16) / 255,
+//         b: parseInt(result[3], 16) / 255,
+//       }
+//     : defaultColor;
+// }
 
 function updateTextLayer(layer, update) {
   layer = Object.assign(layer, update);
 }
 
-export async function setTextFillFromHex(layer, hex) {
-  await figma.loadFontAsync(layer.fontName);
-  const color = getRGBFromHex(hex);
-  updateTextLayer(layer, { fills: [{ type: 'SOLID', color }] });
-}
+// export async function setTextFillFromHex(layer, hex) {
+//   await figma.loadFontAsync(layer.fontName);
+//   const color = getRGBFromHex(hex);
+//   updateTextLayer(layer, { fills: [{ type: 'SOLID', color }] });
+// }
 
-export function setBackgroundFillFromHex(layer, hex) {
-  const color = getRGBFromHex(hex);
-  layer.fills = [{ type: 'SOLID', color }];
-}
+// export function setBackgroundFillFromHex(layer, hex) {
+//   const color = getRGBFromHex(hex);
+//   layer.fills = [{ type: 'SOLID', color }];
+// }
 
 export async function setTextCharactersFromValue(layer, value) {
   if (typeof value === 'number') {
@@ -109,21 +111,21 @@ export async function setBackgroundFillFromImageUrl(layer, url) {
   layer.fills = await getImageBytesFromUrl(url);
 }
 
-export function getColorData() {
-  figma.showUI(__html__, { visible: false });
-  figma.ui.postMessage({ type: 'getColorData' });
-  return new Promise((res) => {
-    figma.ui.onmessage = (resource) => {
-      return res(resource);
-    };
-  });
-}
+// export function getColorData() {
+//   figma.showUI(__html__, { visible: false });
+//   figma.ui.postMessage({ type: 'getColorData' });
+//   return new Promise((res) => {
+//     figma.ui.onmessage = (resource) => {
+//       return res(resource);
+//     };
+//   });
+// }
 
-async function getHexFromLanguage(language) {
-  const colors = await getColorData();
-  const colorObject = colors[language];
-  return colorObject.color || '#aaa';
-}
+// async function getHexFromLanguage(language) {
+//   const colors = await getColorData();
+//   const colorObject = colors[language];
+//   return colorObject.color || '#aaa';
+// }
 
 async function applyLayerTransformationFromField(layer, field, value?, data?) {
   if (field.includes('profile_pic_url')) {
@@ -131,21 +133,21 @@ async function applyLayerTransformationFromField(layer, field, value?, data?) {
     await setBackgroundFillFromImageUrl(layer, value);
   }
 
-  if (field.includes('login')) {
-    if (!isTextNode(layer)) return;
-    await setTextCharactersFromValue(layer, `${value}`);
-  }
+  // if (field.includes('login')) {
+  //   if (!isTextNode(layer)) return;
+  //   await setTextCharactersFromValue(layer, `${value}`);
+  // }
 
-  if (field.includes('language_color')) {
-    const hex = await getHexFromLanguage(data.language);
-    if (isShapeNode(layer)) {
-      await setBackgroundFillFromHex(layer, hex);
-    }
+  // if (field.includes('language_color')) {
+  //   const hex = await getHexFromLanguage(data.language);
+  //   if (isShapeNode(layer)) {
+  //     await setBackgroundFillFromHex(layer, hex);
+  //   }
 
-    if (isTextNode(layer)) {
-      await setTextFillFromHex(layer, hex);
-    }
-  }
+  //   if (isTextNode(layer)) {
+  //     await setTextFillFromHex(layer, hex);
+  //   }
+  // }
 
   if (!isTextNode(layer)) return;
   await setTextCharactersFromValue(layer, value);
